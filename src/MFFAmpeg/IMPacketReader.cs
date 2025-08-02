@@ -7,4 +7,8 @@
 /// </summary>
 public interface IMPacketReader : IEnumerable<MPacket>, IMFFmpegOperation
 {
+    /// <summary>
+    /// Packet reader may or may not support providing timestamp information.
+    /// </summary>
+    IMTimestamp? TimeInfo { get; }
 }

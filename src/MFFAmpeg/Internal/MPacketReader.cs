@@ -107,7 +107,7 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
 
         public bool MoveNext()
         {
-            if (IsCancelled || FormatContextIsNull)
+            if (IsCancelled || ContextIsNotValid)
             {
                 return false;
             }
@@ -129,14 +129,19 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
             throw new NotImplementedException();
         }
     }
+    
+
+    public IMTimestamp? TimeInfo { get { return null; } }
+
+
 
     private readonly int _streamIndex;
 
     private MPacketEnumerator? _enumerator;
 
-    public MPacketReader(int fferror) : base(fferror) { }
+    internal MPacketReader(int fferror) : base(fferror) { }
 
-    public unsafe MPacketReader(AVFormatContext* formatContext, int streamIndex, CancellationToken cancellation = default)
+    internal unsafe MPacketReader(AVFormatContext* formatContext, int streamIndex, CancellationToken cancellation = default)
         : base(formatContext, cancellation)
     {
         _streamIndex = streamIndex;
@@ -181,7 +186,7 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
     /// <returns></returns>
     public IEnumerator<MPacket> GetEnumerator()
     {
-        if (FormatContextIsNull)
+        if (ContextIsNotValid)
         {
             return new MPacketEnumerator(ffmpeg.AVERROR_EXTERNAL);
         }

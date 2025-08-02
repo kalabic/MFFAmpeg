@@ -11,7 +11,9 @@ internal abstract unsafe class FFmpegOperation : DisposableBase, IMFFmpegOperati
 
     public bool IsCancelled { get { return _cancellation.IsCancellationRequested; } }
 
-    public bool FormatContextIsNull { get { return _formatContext is null; } }
+    public bool ContextIsNotValid { get { return _formatContext is null; } }
+
+    public bool ContextIsValid { get { return _formatContext is not null; } }
 
     protected AVFormatContext* _formatContext;
 

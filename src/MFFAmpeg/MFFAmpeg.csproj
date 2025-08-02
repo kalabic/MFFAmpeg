@@ -5,9 +5,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Authors>silvije</Authors>
+    <Company />
+    <Description>Minimalistic API wrapper for FFmpeg.AutoGen library.</Description>
+    <Copyright>Copyright © Silvije Kalabic 2025 All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/kalabic/MFFAmpeg</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/kalabic/MFFAmpeg</RepositoryUrl>
+    <PackageTags>ffmpeg</PackageTags>
+    <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FFmpeg.AutoGen" Version="7.1.1" />

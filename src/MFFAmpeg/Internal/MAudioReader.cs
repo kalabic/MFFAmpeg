@@ -80,7 +80,7 @@ internal unsafe class MAudioReader : ManagedFormatContext, IMAudioReader
     {
         if (_streamReader is null)
         {
-            if (!IsCancelled && !FormatContextIsNull)
+            if (!IsCancelled && !ContextIsNotValid)
             {
                 _streamReader = new MPacketReader(_formatContext, _streamIndex, _cancellation);
             }

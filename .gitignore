@@ -1,2 +1,5 @@
 bin/
 obj/
+src/.vs/
+src/MFFAmpeg/.vs/
+src/MFFATestApp/Properties/

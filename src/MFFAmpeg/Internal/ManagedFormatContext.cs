@@ -41,7 +41,7 @@ internal abstract class ManagedFormatContext : FFmpegOperation
         }
         else
         {
-            if (!FormatContextIsNull)
+            if (!ContextIsNotValid)
             {
 #if DEBUG_UNDISPOSED
                 throw new InvalidOperationException($"Undisposed: {this.GetType().Name}");

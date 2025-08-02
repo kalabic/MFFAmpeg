@@ -78,6 +78,28 @@ public class MFFApi
 
 
     /// <summary>
+    /// Allocate new data buffer for a packet to be written using <see cref="Write(MPacket)"/>
+    /// </summary>
+    /// <param name="size"></param>
+    /// <returns></returns>
+    public static MByteBuffer AllocPacketBuffer(ulong size)
+    {
+        return new MByteBuffer(size);
+    }
+
+
+    /// <summary>
+    /// This basically loads whole file stream into memory.
+    /// </summary>
+    /// <param name="inputStream"></param>
+    /// <returns></returns>
+    public static IList<MPacket> CreatePacketList(IMPacketReader inputStream)
+    {
+        return MPacketList.Create(inputStream);
+    }
+
+
+    /// <summary>
     /// Open file for reading audio stream from. WIP: hard coded to accept only WAV.
     /// </summary>
     /// <param name="path"></param>

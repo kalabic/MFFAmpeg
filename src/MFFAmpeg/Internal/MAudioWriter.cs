@@ -113,7 +113,7 @@ internal unsafe class MAudioWriter : ManagedFormatContext, IMAudioWriter
         AVStream* stream = ffmpeg.avformat_new_stream(_formatContext, null);
         if (stream is null)
         {
-            return -1;
+            return ffmpeg.AVERROR_UNKNOWN;
         }
 
         stream->codecpar->codec_type = AVMediaType.AVMEDIA_TYPE_AUDIO;
@@ -123,7 +123,7 @@ internal unsafe class MAudioWriter : ManagedFormatContext, IMAudioWriter
         stream->codecpar->sample_rate = streamFormat._sample_rate;
         stream->codecpar->ch_layout.nb_channels = streamFormat._num_channels;
 
-        _streamList.Add(new MPacketWriter(_formatContext));
+        _streamList.Add(new MPacketWriter(_formatContext, stream->index, streamFormat));
 
         return 0;
     }
@@ -135,7 +135,7 @@ internal unsafe class MAudioWriter : ManagedFormatContext, IMAudioWriter
             return new MPacketWriter(ffmpeg.AVERROR_EXIT);
         }
 
-        if (FormatContextIsNull || _streamList.Count == 0)
+        if (ContextIsNotValid || _streamList.Count == 0)
         {
             return new MPacketWriter(ffmpeg.AVERROR_EXTERNAL);
         }
@@ -153,7 +153,7 @@ internal unsafe class MAudioWriter : ManagedFormatContext, IMAudioWriter
 
     public int Stop()
     {
-        if (FormatContextIsNull)
+        if (ContextIsNotValid)
         {
             return ffmpeg.AVERROR_EXTERNAL;
         }
