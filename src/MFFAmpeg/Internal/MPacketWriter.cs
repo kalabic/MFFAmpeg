@@ -1,14 +1,15 @@
 ﻿using FFmpeg.AutoGen;
+using MFFAmpeg.AVBuffers;
 using MFFAmpeg.AVFormats;
-using System;
+using MFFAmpeg.Context;
 
 namespace MFFAmpeg.Internal;
 
 
 /// <summary> See comments for <see cref="IMPacketWriter"/> </summary>
-internal class MPacketWriter : UnmanagedFormatContext, IMPacketWriter
+internal class MPacketWriter : MFormatOperation, IMPacketWriter
 {
-    public IMTimestamp? TimeInfo { get { return null; } }
+    public long CurrentTimestamp { get { return _timeInfo.Timestamp; } }
 
 
     private int _index = -1;
@@ -19,7 +20,7 @@ internal class MPacketWriter : UnmanagedFormatContext, IMPacketWriter
 
     internal MPacketWriter(int fferror) : base(fferror) { }
 
-    internal unsafe MPacketWriter(AVFormatContext* formatContext, int index, MAudioStreamFormat format)
+    internal unsafe MPacketWriter(MFormatContext formatContext, int index, MAudioStreamFormat format)
         : base(formatContext)
     {
         _index = index;
@@ -28,7 +29,7 @@ internal class MPacketWriter : UnmanagedFormatContext, IMPacketWriter
 
     public unsafe int Write(MPacket packet)
     {
-        return ffmpeg.av_write_frame(_formatContext, packet.Packet);
+        return ffmpeg.av_write_frame(_context, packet.Packet);
     }
 
     public int WritePacketFromData(MByteBuffer data)
@@ -40,6 +41,7 @@ internal class MPacketWriter : UnmanagedFormatContext, IMPacketWriter
         packet.Duration = sampleCount;
         packet.PTS = _timeInfo.Timestamp;
         var result = Write(packet);
+        packet.Dispose();
         if (result >= 0)
         {
             _timeInfo._timestamp += sampleCount;

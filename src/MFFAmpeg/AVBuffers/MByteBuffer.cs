@@ -1,7 +1,7 @@
 ﻿using FFmpeg.AutoGen;
 using MFFAmpeg.Base;
 
-namespace MFFAmpeg;
+namespace MFFAmpeg.AVBuffers;
 
 
 /// <summary>
@@ -12,6 +12,10 @@ public unsafe class MByteBuffer : DisposableBase
 {
     /// <summary> Size of allocated memory. </summary>
     public ulong BytesAllocated { get { return _bytes_allocated; } }
+
+
+    /// <summary> Available space. </summary>
+    public ulong BytesAvailable { get { return _bytes_allocated - _bytes_used; } }
 
 
     /// <summary> Number of bytes actually used is equal or smaller than size of allocated memory. </summary>
@@ -27,11 +31,11 @@ public unsafe class MByteBuffer : DisposableBase
     //
 
 
-    private byte* _ptr;
+    protected byte* _ptr;
 
-    private ulong _bytes_allocated = 0;
+    protected ulong _bytes_allocated = 0;
 
-    private ulong _bytes_used = 0;
+    protected ulong _bytes_used = 0;
 
     public MByteBuffer(int size)
         : this((ulong)size)
@@ -45,6 +49,12 @@ public unsafe class MByteBuffer : DisposableBase
         {
             _bytes_allocated = size;
         }
+    }
+
+    public void AppendData(byte* data, int size)
+    {
+        Buffer.MemoryCopy(data, _ptr + _bytes_used, (long)(_bytes_allocated - _bytes_used), size);
+        _bytes_used += (ulong)size;
     }
 
     /// <summary>
@@ -69,6 +79,7 @@ public unsafe class MByteBuffer : DisposableBase
             if (_ptr is not null)
             {
                 ffmpeg.av_free(_ptr);
+                _ptr = null;
                 _bytes_allocated = 0;
                 _bytes_used = 0;
             }
@@ -83,7 +94,7 @@ public unsafe class MByteBuffer : DisposableBase
 #if DEBUG_UNDISPOSED
             if (_ptr is not null)
             {
-                throw new InvalidOperationException($"Undisposed: {this.GetType().Name}");
+                throw new InvalidOperationException($"Undisposed: {GetType().Name}");
             }
 #else
             DisposeResources();

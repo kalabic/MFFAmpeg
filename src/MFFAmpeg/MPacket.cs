@@ -1,4 +1,5 @@
 ﻿using FFmpeg.AutoGen;
+using MFFAmpeg.AVBuffers;
 using MFFAmpeg.Base;
 
 namespace MFFAmpeg;
@@ -9,6 +10,9 @@ namespace MFFAmpeg;
 /// </summary>
 public unsafe class MPacket : DisposableBase
 {
+    public static implicit operator AVPacket*(MPacket packet) { return packet._packet; }
+
+
     /// <summary> See <see cref="AVPacket.data"/> </summary>
     public byte* Data { get { return _packet->data; } }
 
@@ -46,7 +50,7 @@ public unsafe class MPacket : DisposableBase
     //
 
     
-    private AVPacket* _packet;
+    private AVPacket* _packet = null;
 
     private bool _lastPacket = false;
 

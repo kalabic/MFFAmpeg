@@ -1,17 +1,11 @@
-﻿using FFmpeg.AutoGen;
+﻿namespace MFFAmpeg;
 
-namespace MFFAmpeg;
 
-/// <summary>
-/// Tells if object implementing FFmpeg operations has entered error state or not.
-/// </summary>
-public interface IMFFmpegOperation
+public interface IMFFmpegOperation : IDisposable
 {
+    /// <summary> Tells if object implementing FFmpeg operations has entered error state or not. </summary>
     int FFerror { get; }
 
+    /// <summary> State of <see cref="CancellationToken"/> object was created with. </summary>
     bool IsCancelled { get; }
-
-    bool ContextIsNotValid { get; }
-
-    bool ContextIsValid { get; }
 }

@@ -1,4 +1,5 @@
 ﻿using FFmpeg.AutoGen;
+using MFFAmpeg.AVBuffers;
 using MFFAmpeg.AVFormats;
 using MFFAmpeg.Internal;
 using System.Runtime.InteropServices;
@@ -11,13 +12,18 @@ namespace MFFAmpeg;
 /// </summary>
 public class MFFApi
 {
-    /// <summary> Default input file format. </summary>
+    /// <summary> Can be used by <see cref="OpenAudioReader(string, MInputFormat?, CancellationToken)"/> 
+    /// to make it open only WAV files.</summary>
     public static readonly MInputFormat INPUT_FORMAT_WAV = new MInputFormat("wav");
 
 
-    /// <summary> Default audio stream format. </summary>
-    public static readonly MAudioFileFormat DEFAULT_AUDIO_FILE_FORMAT =
+    /// <summary> Default output file format. </summary>
+    public static readonly MAudioFileFormat FILE_FORMAT_WAV =
         new MAudioFileFormat("wav", AVSampleFormat.AV_SAMPLE_FMT_S16, AVCodecID.AV_CODEC_ID_PCM_S16LE);
+
+
+    /// <summary> Enumerator object that can iterate over all registered muxers. </summary>
+    public static readonly IEnumerable<MOutputFormat> MUXER_LIST = new FFmpegMuxerList();
 
 
     /// <summary>
@@ -89,6 +95,30 @@ public class MFFApi
 
 
     /// <summary>
+    /// Allocates a new frame object, used to receive decoded frames from a decoder.
+    /// </summary>
+    /// <returns></returns>
+    public static MFrame AllocFrame()
+    {
+        return new MFrame();
+    }
+
+
+    /// <summary>
+    /// Allocates an AVCodecContext, fills it based on the values from the supplied codec parameters,
+    /// and initializes AVCodecContext to use the given AVCodec.
+    /// </summary>
+    /// <param name="codec"></param>
+    /// <param name="parameters"></param>
+    /// <param name="cancellation"></param>
+    /// <returns></returns>
+    public static IMPacketDecoder CreateDecoder(MCodec codec, MCodecParameters parameters, CancellationToken cancellation = default)
+    {
+        return MPacketDecoder.Create(codec, parameters, cancellation);
+    }
+
+
+    /// <summary>
     /// This basically loads whole file stream into memory.
     /// </summary>
     /// <param name="inputStream"></param>
@@ -96,6 +126,31 @@ public class MFFApi
     public static IList<MPacket> CreatePacketList(IMPacketReader inputStream)
     {
         return MPacketList.Create(inputStream);
+    }
+
+
+    /// <summary>
+    /// Iterate through all muxers and find first that supports given file format.
+    ///  If none is found, returned <see cref="MOutputFormat.IsNull"/> will be true.
+    /// </summary>
+    /// <param name="fileFormat"></param>
+    /// <returns></returns>
+    public static unsafe MOutputFormat FindMuxerForFileFormat(MAudioFileFormat fileFormat)
+    {
+        // TODO: In fact not correct procedure, but good enough for now.
+        // TODO: Return a list of matching muxers if more than one was found.
+        MOutputFormat format = new(null);
+        foreach (var muxerFormat in MFFApi.MUXER_LIST)
+        {
+            if (muxerFormat.AudioCodec == fileFormat.CodecId &&
+                muxerFormat.Extensions is not null &&
+                muxerFormat.Extensions.Equals(fileFormat.Extension))
+            {
+                format = muxerFormat;
+                break;
+            }
+        }
+        return format;
     }
 
 

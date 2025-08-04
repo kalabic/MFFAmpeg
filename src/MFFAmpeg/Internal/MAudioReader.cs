@@ -1,66 +1,75 @@
 ﻿using FFmpeg.AutoGen;
 using MFFAmpeg.AVFormats;
+using MFFAmpeg.Context;
 
 namespace MFFAmpeg.Internal;
 
 
 /// <summary> See comments for <see cref="IMAudioReader"/> </summary>
-internal unsafe class MAudioReader : ManagedFormatContext, IMAudioReader
+internal unsafe class MAudioReader : MFormatOperation, IMAudioReader
 {
-    internal static MAudioReader Open(string path, MInputFormat? ifmt, CancellationToken cancellation = default)
+    internal static MAudioReader Open(string path, MInputFormat? format, CancellationToken cancellation = default)
     {
-        int fferror = 0;
+        var context = MFormatContext.Create();
+        if (context is null)
+        {
+            return new MAudioReader(ffmpeg.AVERROR_UNKNOWN, path);
+        }
 
-        AVFormatContext* formatContext;
-        formatContext = ffmpeg.avformat_alloc_context();
-        fferror = ffmpeg.avformat_open_input(&formatContext, path, ifmt is null ? null : ifmt.Format, null);
+        AVInputFormat* inputFormat = (format is null) ? null : (AVInputFormat *)format;
+        int fferror = 0;
+        fferror = ffmpeg.avformat_open_input(context, path, inputFormat, null);
         if (fferror < 0)
         {
+            context.Dispose();
             return new MAudioReader(fferror, path);
         }
 
-        var streamIndex = ffmpeg.av_find_best_stream(formatContext, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, null, 0);
+        fferror = ffmpeg.avformat_find_stream_info(context, null);
+        if (fferror < 0)
+        {
+            context.Dispose();
+            return new MAudioReader(fferror, path);
+        }
+
+        AVCodec* codec = null;
+        var streamIndex = ffmpeg.av_find_best_stream(context, AVMediaType.AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
         if (streamIndex < 0)
         {
+            context.Dispose();
             // streamIndex is non-negative stream number in case of success, but in case of error it is
             // AVERROR_STREAM_NOT_FOUND if no stream with the requested type could be found,
             // AVERROR_DECODER_NOT_FOUND if streams were found but no decoder.
             return new MAudioReader(streamIndex, path);
         }
 
-        return new MAudioReader(path, formatContext, streamIndex, cancellation);
+        return new MAudioReader(path, context, streamIndex, codec, cancellation);
     }
 
-    public MAudioFileFormat FileFormat
-    {
-        get { return new MAudioFileFormat("", 0, _codecPar->codec_id); }
-    }
+    public string Path { get { return _path; } }
 
-    public MAudioStreamFormat StreamFormat
-    {
-        get { return new MAudioStreamFormat(_codecPar->sample_rate, _codecPar->bits_per_coded_sample, _codecPar->ch_layout.nb_channels); }
-    }
 
     private readonly string _path;
 
     private readonly int _streamIndex;
 
-    private readonly AVCodecParameters* _codecPar;
+    private readonly MCodec _codec;
 
-    private MPacketReader? _streamReader = null;
+    private MPacketReader? _reader = null;
 
     internal MAudioReader(int fferror, string path)
         : base(fferror)
     {
         _path = path;
+        _codec = new MCodec(null);
     }
 
-    internal MAudioReader(string path, AVFormatContext* formatContext, int streamIndex, CancellationToken cancellation = default)
-        : base(formatContext, cancellation)
+    internal MAudioReader(string path, MFormatContext context, int streamIndex, AVCodec* streamCodec, CancellationToken cancellation = default)
+        : base(context, cancellation)
     {
         _path = path;
         _streamIndex = streamIndex;
-        _codecPar = formatContext->streams[streamIndex]->codecpar;
+        _codec = new MCodec(streamCodec);
     }
 
     /// <summary>
@@ -69,30 +78,44 @@ internal unsafe class MAudioReader : ManagedFormatContext, IMAudioReader
     /// <param name="disposing"></param>
     protected override void Dispose(bool disposing)
     {
+        void DisposeResources()
+        {
+            _reader?.Dispose();
+            _context.Dispose();
+        }
+
         if (disposing)
         {
-            _streamReader?.Dispose();
+            DisposeResources();
         }
+        else
+        {
+#if DEBUG_UNDISPOSED
+            if (_context.Ptr is not null)
+            {
+                throw new InvalidOperationException($"Undisposed: {this.GetType().Name}");
+            }
+#else
+            DisposeResources();
+#endif
+        }
+
         base.Dispose(disposing);
     }
 
     public IMPacketReader OpenMainStream()
     {
-        if (_streamReader is null)
+        if (_reader is null)
         {
-            if (!IsCancelled && !ContextIsNotValid)
+            if (!IsCancelled && !Context.IsNotValid)
             {
-                _streamReader = new MPacketReader(_formatContext, _streamIndex, _cancellation);
+                _reader = new MPacketReader(_context, _streamIndex, _codec, _cancellation);
             }
             else
             {
-                _streamReader = new MPacketReader(IsCancelled ? ffmpeg.AVERROR_EXIT : ffmpeg.AVERROR_EXTERNAL);
+                _reader = new MPacketReader(IsCancelled ? ffmpeg.AVERROR_EXIT : ffmpeg.AVERROR_EXTERNAL);
             }
         }
-        else
-        {
-            throw new NotImplementedException("Cannot open multiple instances of a packet reader.");
-        }
-        return _streamReader;
+        return _reader;
     }
 }

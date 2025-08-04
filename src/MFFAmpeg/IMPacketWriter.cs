@@ -1,4 +1,6 @@
-﻿namespace MFFAmpeg;
+﻿using MFFAmpeg.AVBuffers;
+
+namespace MFFAmpeg;
 
 
 /// <summary>
@@ -7,9 +9,9 @@
 public interface IMPacketWriter : IMFFmpegOperation
 {
     /// <summary>
-    /// Packet writer may or may not support providing timestamp information.
+    /// Timestamp for the next packet that will be written. Packet writer may or may not support providing timestamp information.
     /// </summary>
-    IMTimestamp? TimeInfo { get; }
+    long CurrentTimestamp { get; }
 
     /// <summary>
     /// Write a packet of data.

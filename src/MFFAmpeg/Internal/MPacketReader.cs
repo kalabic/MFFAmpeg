@@ -1,13 +1,15 @@
 ﻿using FFmpeg.AutoGen;
+using MFFAmpeg.AVFormats;
+using MFFAmpeg.Context;
 using System.Collections;
 
 namespace MFFAmpeg.Internal;
 
 
 /// <summary> See comments for <see cref="IMPacketReader"/> </summary>
-internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
+internal class MPacketReader : MFormatOperation, IMPacketReader
 {
-    internal unsafe class MPacketEnumerator : UnmanagedFormatContext, IEnumerator<MPacket>
+    internal unsafe class MPacketEnumerator : MFormatOperation, IEnumerator<MPacket>
     {
         public MPacket Current { get { return new MPacket(_packet, (_nextPacket == null)); } }
 
@@ -27,7 +29,7 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
             _nextPacket = null;
         }
 
-        internal MPacketEnumerator(AVFormatContext* formatContext, int streamIndex, CancellationToken cancellation = default)
+        internal MPacketEnumerator(MFormatContext formatContext, int streamIndex, CancellationToken cancellation = default)
             : base(formatContext, cancellation)
         {
             _streamIndex = streamIndex;
@@ -41,7 +43,7 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
             while (!IsCancelled)
             {
                 packet = ffmpeg.av_packet_alloc();
-                _fferror = ffmpeg.av_read_frame(_formatContext, packet);
+                _fferror = ffmpeg.av_read_frame(_context, packet);
                 if (_fferror < 0)
                 {
                     ffmpeg.av_packet_free(&packet);
@@ -107,7 +109,7 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
 
         public bool MoveNext()
         {
-            if (IsCancelled || ContextIsNotValid)
+            if (IsCancelled || Context.IsNotValid)
             {
                 return false;
             }
@@ -129,21 +131,36 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
             throw new NotImplementedException();
         }
     }
-    
+
+    public MCodec Codec { get { return _codec; } }
+
+    public MCodecParameters CodecParameters { get { return _codecParameters; } }
+
+    public MAudioStreamFormat StreamFormat { get { return _codecParameters.StreamFormat; } }
 
     public IMTimestamp? TimeInfo { get { return null; } }
 
+    private MCodec _codec;
 
+    private MCodecParameters _codecParameters;
 
     private readonly int _streamIndex;
 
     private MPacketEnumerator? _enumerator;
 
-    internal MPacketReader(int fferror) : base(fferror) { }
-
-    internal unsafe MPacketReader(AVFormatContext* formatContext, int streamIndex, CancellationToken cancellation = default)
-        : base(formatContext, cancellation)
+    internal MPacketReader(int fferror) 
+        : base(fferror) 
     {
+        _codec = new MCodec();
+        _codecParameters = new MCodecParameters();
+        _streamIndex = -1;
+    }
+
+    internal unsafe MPacketReader(MFormatContext context, int streamIndex, MCodec codec, CancellationToken cancellation = default)
+        : base(context, cancellation)
+    {
+        _codec = codec;
+        _codecParameters = new MCodecParameters(Context.Ptr->streams[streamIndex]->codecpar);
         _streamIndex = streamIndex;
     }
 
@@ -186,7 +203,7 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
     /// <returns></returns>
     public IEnumerator<MPacket> GetEnumerator()
     {
-        if (ContextIsNotValid)
+        if (Context.IsNotValid)
         {
             return new MPacketEnumerator(ffmpeg.AVERROR_EXTERNAL);
         }
@@ -204,10 +221,10 @@ internal class MPacketReader : UnmanagedFormatContext, IMPacketReader
 
         unsafe
         {
-            int fferror = ffmpeg.avformat_seek_file(_formatContext, 0, 0, 0, 0, ffmpeg.AVSEEK_FLAG_BACKWARD);
+            int fferror = ffmpeg.avformat_seek_file(_context, 0, 0, 0, 0, ffmpeg.AVSEEK_FLAG_BACKWARD);
             if (fferror >= 0)
             {
-                _enumerator = new MPacketEnumerator(_formatContext, _streamIndex);
+                _enumerator = new MPacketEnumerator(_context, _streamIndex);
             }
             else
             {
