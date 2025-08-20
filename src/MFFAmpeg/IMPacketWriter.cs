@@ -21,7 +21,7 @@ public interface IMPacketWriter : IMFFmpegOperation
     int Write(MPacket packet);
 
     /// <summary>
-    /// Write a packet of data using data buffer allocated with <see cref="MFFApi.AllocPacketBuffer(ulong)"/>
+    /// Write a packet of data using data buffer allocated with <see cref="MFFApi.AllocPacketBuffer(long)"/>
     /// </summary>
     /// <param name="data"></param>
     /// <returns></returns>

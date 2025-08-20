@@ -11,15 +11,15 @@ namespace MFFAmpeg.AVBuffers;
 public unsafe class MByteBuffer : DisposableBase
 {
     /// <summary> Size of allocated memory. </summary>
-    public ulong BytesAllocated { get { return _bytes_allocated; } }
+    public long BytesAllocated { get { return _bytes_allocated; } }
 
 
     /// <summary> Available space. </summary>
-    public ulong BytesAvailable { get { return _bytes_allocated - _bytes_used; } }
+    public long BytesAvailable { get { return _bytes_allocated - _bytes_used; } }
 
 
     /// <summary> Number of bytes actually used is equal or smaller than size of allocated memory. </summary>
-    public ulong BytesUsed { get { return _bytes_used; } set { _bytes_used = value; } }
+    public long BytesUsed { get { return _bytes_used; } set { _bytes_used = value; } }
 
 
     /// <summary> Pointer to allocated memory. </summary>
@@ -33,28 +33,28 @@ public unsafe class MByteBuffer : DisposableBase
 
     protected byte* _ptr;
 
-    protected ulong _bytes_allocated = 0;
+    protected long _bytes_allocated = 0;
 
-    protected ulong _bytes_used = 0;
+    protected long _bytes_used = 0;
 
     public MByteBuffer(int size)
-        : this((ulong)size)
+        : this((long)size)
     {
     }
 
-    public MByteBuffer(ulong size)
+    public MByteBuffer(long size)
     {
-        _ptr = (byte *)ffmpeg.av_malloc(size);
+        _ptr = (byte *)ffmpeg.av_malloc((ulong)size);
         if (_ptr is not null)
         {
             _bytes_allocated = size;
         }
     }
 
-    public void AppendData(byte* data, int size)
+    public void AppendData(byte* data, long size)
     {
-        Buffer.MemoryCopy(data, _ptr + _bytes_used, (long)(_bytes_allocated - _bytes_used), size);
-        _bytes_used += (ulong)size;
+        Buffer.MemoryCopy(data, _ptr + _bytes_used, _bytes_allocated - _bytes_used, size);
+        _bytes_used += size;
     }
 
     /// <summary>

@@ -22,17 +22,17 @@ public struct MAudioStreamFormat
         NumChannels = num_channels;
     }
 
-    public readonly ulong ByteToSampleCount(ulong size)
+    public readonly long ByteToSampleCount(long size)
     {
         switch(Format)
         {
             case AVSampleFormat.AV_SAMPLE_FMT_S16:      // signed 16 bits
             case AVSampleFormat.AV_SAMPLE_FMT_S16P:     // signed 16 bits, planar
-                return 8 * size / ((ulong)16 * (ulong)NumChannels);
+                return 8 * size / (16L * NumChannels);
 
             case AVSampleFormat.AV_SAMPLE_FMT_FLT:      // float
             case AVSampleFormat.AV_SAMPLE_FMT_FLTP:     // float, planar
-                return 8 * size / ((ulong)32 * (ulong)NumChannels);
+                return 8 * size / (32L * NumChannels);
 
             case AVSampleFormat.AV_SAMPLE_FMT_NONE:     // not initialized
             case AVSampleFormat.AV_SAMPLE_FMT_U8:       // unsigned 8 bits

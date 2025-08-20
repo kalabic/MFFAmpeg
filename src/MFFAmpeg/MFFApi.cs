@@ -88,7 +88,7 @@ public class MFFApi
     /// </summary>
     /// <param name="size"></param>
     /// <returns></returns>
-    public static MByteBuffer AllocPacketBuffer(ulong size)
+    public static MByteBuffer AllocPacketBuffer(long size)
     {
         return new MByteBuffer(size);
     }
