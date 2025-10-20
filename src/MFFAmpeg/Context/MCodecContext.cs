@@ -1,5 +1,5 @@
-﻿using FFmpeg.AutoGen;
-using MFFAmpeg.Base;
+﻿using DotBase.Core;
+using FFmpeg.AutoGen;
 
 namespace MFFAmpeg.Context;
 

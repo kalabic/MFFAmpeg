@@ -1,6 +1,6 @@
-﻿using FFmpeg.AutoGen;
+﻿using DotBase.Core;
+using FFmpeg.AutoGen;
 using MFFAmpeg.AVBuffers;
-using MFFAmpeg.Base;
 
 namespace MFFAmpeg;
 

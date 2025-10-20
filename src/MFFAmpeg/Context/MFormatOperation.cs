@@ -1,4 +1,4 @@
-﻿using MFFAmpeg.Base;
+﻿using DotBase.Core;
 
 namespace MFFAmpeg.Context;
 
