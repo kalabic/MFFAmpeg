@@ -4,7 +4,7 @@ namespace MFFAmpeg.Context;
 
 
 /// <summary> See comments for <see cref="IMFormatOperation"/> </summary>
-internal abstract class MCodecOperation : DisposableBase, IMCodecOperation
+internal abstract class MCodecOperation : FinalizableBase, IMCodecOperation
 {
     public MCodecContext Context { get { return _context; } }
 

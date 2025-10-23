@@ -4,7 +4,7 @@ using FFmpeg.AutoGen;
 namespace MFFAmpeg.Context;
 
 
-public unsafe class MCodecContext : DisposableBase
+public unsafe class MCodecContext : FinalizableBase
 {
     public static unsafe MCodecContext? Create(MCodec codec, MCodecParameters parameters)
     {

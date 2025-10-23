@@ -8,7 +8,7 @@ namespace MFFAmpeg.AVBuffers;
 /// Presumably safe wrapper for memory allocated by <see cref="ffmpeg.av_malloc(ulong)"/>.
 /// Used to create new <see cref="MPacket"/> for writting to output.
 /// </summary>
-public unsafe class MByteBuffer : DisposableBase
+public unsafe class MByteBuffer : FinalizableBase
 {
     /// <summary> Size of allocated memory. </summary>
     public long BytesAllocated { get { return _bytes_allocated; } }

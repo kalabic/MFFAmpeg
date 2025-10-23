@@ -8,7 +8,7 @@ namespace MFFAmpeg;
 /// <summary>
 /// Presumably safe wrapper for <see cref="AVPacket"/>
 /// </summary>
-public unsafe class MPacket : DisposableBase
+public unsafe class MPacket : FinalizableBase
 {
     public static implicit operator AVPacket*(MPacket packet) { return packet._packet; }
 
