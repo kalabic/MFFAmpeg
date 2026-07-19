@@ -21,7 +21,7 @@ internal class Program
     /// <param name="args">Input audio file path.</param>
     private static void Main(string[] args)
     {
-        if (MFFApi.Register() < 0)
+        if (MFFApi.Register(null, false, 2) < 0)
         {
             Console.WriteLine($"FFmpeg shared libraries not found. Cannot continue.");
             return;

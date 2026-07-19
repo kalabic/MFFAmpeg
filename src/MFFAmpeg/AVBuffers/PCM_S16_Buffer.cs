@@ -21,9 +21,9 @@ public unsafe class PCM_S16_Buffer : MByteBuffer
         if (format == AVSampleFormat.AV_SAMPLE_FMT_FLTP && numChannels == 2)
         {
             // Rule is that when spans are created, their size is measured as a total number of samples accross all channels.
-            var output = ((Ptr_t<short>)(_ptr + _bytes_used)).AsSampleSpan(numSamples * numChannels, numChannels);
-            var leftInput = ((Ptr_t<float>)channels[0]).AsSampleSpan(numSamples);
-            var rightInput = ((Ptr_t<float>)channels[1]).AsSampleSpan(numSamples);
+            var output = ((Ptr_t<short>)(_ptr + _bytes_used)).AsSampleValueSpan(numSamples * numChannels, numChannels);
+            var leftInput = ((Ptr_t<float>)channels[0]).AsSampleValueSpan(numSamples);
+            var rightInput = ((Ptr_t<float>)channels[1]).AsSampleValueSpan(numSamples);
 
             ATools.ConvertToStereo(leftInput, rightInput, output);
 
@@ -32,8 +32,8 @@ public unsafe class PCM_S16_Buffer : MByteBuffer
         }
         else if (format == AVSampleFormat.AV_SAMPLE_FMT_FLTP && numChannels == 1)
         {
-            var output = ((Ptr_t<short>)(_ptr + _bytes_used)).AsSampleSpan(numSamples * numChannels, numChannels);
-            var monoTrack = ((Ptr_t<float>)channels[0]).AsSampleSpan(numSamples);
+            var output = ((Ptr_t<short>)(_ptr + _bytes_used)).AsSampleValueSpan(numSamples * numChannels, numChannels);
+            var monoTrack = ((Ptr_t<float>)channels[0]).AsSampleValueSpan(numSamples);
 
             ATools.Convert(monoTrack, output);
 

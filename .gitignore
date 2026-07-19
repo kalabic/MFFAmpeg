@@ -1,5 +1,5 @@
-bin/
-obj/
-src/.vs/
-src/MFFAmpeg/.vs/
+[Bb]in/
+[Oo]bj/
+**/.vs/
+**/.github/
 src/MFFATestApp/Properties/

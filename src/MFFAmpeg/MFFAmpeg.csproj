@@ -14,7 +14,7 @@
     <RepositoryUrl>https://github.com/kalabic/MFFAmpeg</RepositoryUrl>
     <PackageTags>ffmpeg</PackageTags>
     <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
-    <Version>1.3.2</Version>
+    <Version>1.3.3-beta</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AudioFormatLib" Version="1.3.2-alpha" />
-    <PackageReference Include="FFmpeg.AutoGen" Version="7.1.1" />
+    <PackageReference Include="AudioFormatLib" Version="1.5.0-alpha" />
+    <PackageReference Include="FFmpeg.AutoGen" Version="8.1.0" />
   </ItemGroup>
 
 </Project>

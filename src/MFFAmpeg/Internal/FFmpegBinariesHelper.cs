@@ -1,4 +1,5 @@
 ﻿using FFmpeg.AutoGen;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace MFFAmpeg.Internal;
@@ -49,10 +50,18 @@ internal static class FFmpegBinariesHelper
 
                     if (Directory.Exists(ffmpegBinaryPath))
                     {
+                        var dllProbePath = Path.Combine(ffmpegBinaryPath, "avcodec-62.dll");
+                        if (File.Exists(dllProbePath))
+                        {
+                            var dllVersionString = FileVersionInfo.GetVersionInfo(dllProbePath).ProductVersion;
+                            Console.WriteLine($"AVcodec DLL product info: {dllVersionString}");
+                        }
+
                         if (consoleVerbosity >= 2)
                         {
                             Console.WriteLine($"FFmpeg binaries found in: {ffmpegBinaryPath}");
                         }
+                        
                         ffmpeg.RootPath = ffmpegBinaryPath;
                         return 0;
                     }
